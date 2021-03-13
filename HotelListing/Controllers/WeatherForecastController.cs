@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-// This is my amazing application!
 namespace HotelListing.Controllers
 {
     [ApiController]
