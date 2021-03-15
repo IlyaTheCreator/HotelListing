@@ -1,5 +1,7 @@
 using HotelListing.Configurations;
 using HotelListing.Data;
+using HotelListing.IRepository;
+using HotelListing.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,12 +54,26 @@ namespace HotelListing
             // Mapper setup
             services.AddAutoMapper(typeof(MapperInitializer));
 
+            /* Transient means that every time we need it, the new instance will be created
+               Scoped means that the UnitOfWork (in this example) will be created once for 
+               a group of operations
+               Singleton means that the UnitOfWork will be created only once in the beginning */
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListing", Version = "v1" });
             });
 
-            services.AddControllers();
+            
+            services.AddControllers()
+                // Fixing the potential object cycle issue
+                .AddNewtonsoftJson(
+                options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                }    
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
