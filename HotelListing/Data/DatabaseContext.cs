@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HotelListing.Configurations.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,9 @@ namespace HotelListing.Data
 
     // This class defines the bridge between our defined classes (Country & Hotel)
     // and the actual database
-    public class DatabaseContext : DbContext
+
+    // If you are fine with the default user you don't need to provide the <ApiUser>
+    public class DatabaseContext : IdentityDbContext<ApiUser> // just DbContext without identity package
     {
         public DatabaseContext(DbContextOptions options) : base(options)
         {}
@@ -20,53 +24,12 @@ namespace HotelListing.Data
         // seeding in action
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Country>().HasData(
-                new Country()
-                {
-                    Id = 1,
-                    Name = "Jamaica",
-                    ShortName = "JM"
-                },
-                new Country()
-                {
-                    Id = 2,
-                    Name = "Bahamas",
-                    ShortName = "BS"
-                },
-                new Country()
-                {
-                    Id = 3,
-                    Name = "Cayman Island",
-                    ShortName = "CI"
-                }
-            );
+            base.OnModelCreating(builder); // needed for the identity package
 
-            builder.Entity<Hotel>().HasData(
-                new Hotel()
-                {
-                    Id = 1,
-                    Name = "Sandals Resort and Spa",
-                    Address = "Negril",
-                    CountryId = 1,
-                    Rating = 4.5
-                },
-                new Hotel()
-                {
-                    Id = 2,
-                    Name = "Comfort Suites",
-                    Address = "George Town",
-                    CountryId = 3,
-                    Rating = 4.3
-                },
-                new Hotel()
-                {
-                    Id = 3,
-                    Name = "Grand Palidium",
-                    Address = "Nassua",
-                    CountryId = 2,
-                    Rating = 4
-                }
-            );
+            // (Configurations/Entities)
+            builder.ApplyConfiguration(new CountryConfiguration());
+            builder.ApplyConfiguration(new HotelConfiguration());
+            builder.ApplyConfiguration(new RoleConfiguration()); 
         }
     }
 }

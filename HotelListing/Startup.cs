@@ -2,9 +2,11 @@ using HotelListing.Configurations;
 using HotelListing.Data;
 using HotelListing.IRepository;
 using HotelListing.Repository;
+using HotelListing.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +39,15 @@ namespace HotelListing
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"))
             );
 
+            // Enabling authentication
+            services.AddAuthentication();
+
+            // ConfigureIdentity is the static method in the ServiceExtensions class
+            services.ConfigureIdentity();
+
+            // The same thing like with the ConfigureIdentity but for the JWT
+            services.ConfigureJWT(Configuration);
+
             // Adding CORS // cross origin request sharing
 
             // "o" stands for cors options
@@ -59,6 +70,9 @@ namespace HotelListing
                a group of operations
                Singleton means that the UnitOfWork will be created only once in the beginning */
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+            // This one is for auth and jwt stuff
+            services.AddScoped<IAuthManager, AuthManager>();
 
             services.AddSwaggerGen(c =>
             {
@@ -93,8 +107,10 @@ namespace HotelListing
             app.UseCors("AllowAll");
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {
